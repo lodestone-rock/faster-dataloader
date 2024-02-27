@@ -2,6 +2,12 @@
 
 This `threading_dataloader`, which utilizes multithreading to improve data loading performance compared to the standard PyTorch dataloader on IO heavy workload.
 
+### Installation
+
+```bash
+pip install . 
+```
+
 ### Usage
 
 ```python

@@ -24,6 +24,7 @@ def threading_dataloader(dataset, batch_size=1, num_workers=10, collate_fn=None,
 
     # Create a ThreadPoolExecutor with the specified number of workers
     workers = ThreadPoolExecutor(max_workers=num_workers)
+    overseer = ThreadPoolExecutor(max_workers=1)
 
     # Generate batches of indices based on the dataset size and batch size
     num_samples = len(dataset)
@@ -50,8 +51,12 @@ def threading_dataloader(dataset, batch_size=1, num_workers=10, collate_fn=None,
         prefetch_queue.put(batch)
     
     # Submit the prefetch tasks to the worker threads
-    for indices in batch_indices:
-        workers.submit(batch_to_queue, indices)
+    def overseer_thread():
+        for indices in batch_indices:
+            workers.submit(batch_to_queue, indices)
+
+    # just in case worker submit loop is too slow due to a ton of loops, fork it to another thread so the main thread can continue
+    overseer.submit(overseer_thread)
 
     # Yield the prefetched batches
     for _ in range(len(batch_indices)):
